@@ -1,9 +1,12 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
+
+from .forms import ProfileForm
 from .models import Profile, CustomUser
 from jobs.models import Job, JobApplicant
 
@@ -83,13 +86,57 @@ def signin_view(request):
             login(request, user)
             if not Profile.objects.filter(user=user).exists():
                 print('User does not have a profile.')
+                return redirect('auth:profile_create')
             print('User has a profile.')
+            return redirect('posts:post-list')
         else:
             messages.error(request, 'Invalid email or password')
     return render(request, 'auth/signin.html')
 
+@login_required
 def profile_create_view(request):
-    pass
+    if not request.user.is_authenticated:
+        messages.error(request, 'Please sing up first')
+        return redirect('auth:signin')
+
+    if not profile.objects.filter(user=request.user).exists():
+        if request.method == 'POST':
+            first_name = request.POST.get('first_name', '').strip()
+            last_name = request.POST.get('last_name', '').strip()
+            bio = request.POST.get('bio', '').strip()
+            profile_picture = request.FILES.get('profile_picture')
+
+            if not all([first_name, last_name, bio]):
+                messages.error(request, 'All fields are required.')
+                return render(request, 'auth/signup.html', {
+                    'first_name': first_name,
+                    'last_name': last_name,
+                    'profile_picture': profile_picture,
+                })
+
+            profile = Profile.objects.create(
+                user=request.user,
+                first_name=first_name,
+                last_name=last_name,
+                bio=bio,
+                profile_picture=profile_picture,
+            )
+
+    # if hasattr(request.user, 'profile') and request.user.profile:
+    #     return redirect('auth:signin')
+    #
+    # if request.method == 'POST':
+    #     form = ProfileForm(request.POST, request.FILES)
+    #     if form.is_valid():
+    #         profile = form.save(commit=False)
+    #         profile.user = request.user
+    #         profile.save()
+    #         return redirect('auth:signin')
+    # else:
+    #     form = ProfileForm()
+    # context = {'form': form,}
+    # return render(request, 'auth/profile_create.html',)
+
 def profile_view(request):
     if not request.user.is_authenticated:
         messages.error(request, 'Please sign in first.')
@@ -116,6 +163,22 @@ def profile_view(request):
     else:
         messages.info(request, 'Profile does not exist.')
         return redirect('auth:profile_create')
+
+
+# @login_required(login_url='/signin/')
+# def profile_completion_view(request):
+#     if hasattr(request.user, 'profile') and request.user.profile:
+#         return redirect('auth:signin')
+#     if request.method == 'POST':
+#         form = profile_completion_view (request.POST, request.FILES, instance=request.user.profile)
+#         if form.is_valid():
+#             profile = form.save(commit=False)
+#             profile.user = request.user
+#             profile.save()
+#             return redirect('auth:signin')
+#     else:
+#         form = profile_completion_view (instance=request.user.profile)
+#     return render(request, 'auth/signup.html')
 
 def logout_view(request):
     logout(request)

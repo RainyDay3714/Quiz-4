@@ -9,7 +9,7 @@ def get_filename_ext(filepath):
     return name, ext
 
 def upload_image_path(instance, filename):
-    pass
+    return os.path.join('profile_pictures', filename)
 
 class UserManager(BaseUserManager):
     def create_user(self, email, username, password=None, is_active=True, is_staff=False, is_admin=False):
@@ -78,8 +78,6 @@ class CustomUser(AbstractUser):
     @property
     def is_admin(self):
         return self.admin
-    
-
 
 
 class Profile(models.Model):

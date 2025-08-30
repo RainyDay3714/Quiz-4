@@ -1,3 +1,4 @@
+from django.contrib.auth.mixins import UserPassesTestMixin
 from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
@@ -9,8 +10,15 @@ from .models import Job, JobApplicant
 
 # Create your views here.
 
-class JobCreateView(CreateView):
-    pass
+class JobCreateView(UserPassesTestMixin, CreateView):
+    model = Job
+    fields = ['title', 'description', 'salary', 'location']
+    template_name = 'jobs/job_create.html'
+    success_url = '/jobs/list/'
+
+    def test_func(self):
+        return self.request.user.is_staff
+
 def job_list_view(request):
     jobs = Job.objects.all()
     query = request.GET.get('q', None)
