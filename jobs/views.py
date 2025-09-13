@@ -12,7 +12,7 @@ from .models import Job, JobApplicant
 
 class JobCreateView(UserPassesTestMixin, CreateView):
     model = Job
-    fields = ['title', 'description', 'salary', 'location']
+    fields = ['job_title', 'job_description', 'min_offer', 'max_offer', 'location']
     template_name = 'jobs/job_create.html'
     success_url = '/jobs/list/'
 
