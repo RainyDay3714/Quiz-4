@@ -91,6 +91,7 @@ def signin_view(request):
             return redirect('posts:post-list')
         else:
             messages.error(request, 'Invalid email or password')
+            return redirect('auth:signup')
     return render(request, 'auth/signin.html')
 
 @login_required
@@ -99,7 +100,7 @@ def profile_create_view(request):
         messages.error(request, 'Please sing up first')
         return redirect('auth:signin')
 
-    if not profile.objects.filter(user=request.user).exists():
+    if not Profile.objects.filter(user=request.user).exists():
         if request.method == 'POST':
             first_name = request.POST.get('first_name', '').strip()
             last_name = request.POST.get('last_name', '').strip()
@@ -135,7 +136,7 @@ def profile_create_view(request):
     # else:
     #     form = ProfileForm()
     # context = {'form': form,}
-    # return render(request, 'auth/profile_create.html',)
+    return render(request, 'auth/profile_create.html',)
 
 def profile_view(request):
     if not request.user.is_authenticated:
