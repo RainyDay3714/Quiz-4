@@ -49,7 +49,9 @@ class PostDeleteView(DeleteView):
         return obj
     
 class PostUpdateView(LoginRequiredMixin, UpdateView):
-
+    model = Post
+    fields = ['content', 'image']
+    template_name = 'posts/post_update.html'
     
     def get_object(self, queryset=None):
         obj = super().get_object(queryset)
